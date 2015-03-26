@@ -16,11 +16,11 @@
 var canvas;
 var context;
 var images = {};
-var totalResources = 6;
+var totalResources = 9;
 var numResourcesLoaded = 0;
 var fps = 30;
 var x = 245;
-var y = 185;
+var y = 400;
 var breathInc = 0.1;
 var breathDir = 1;
 var breathAmt = 0;
@@ -35,6 +35,7 @@ var blinkTimer = setInterval(updateBlink, blinkUpdateTime);
 var fpsInterval = setInterval(updateFPS, 1000);
 var numFramesDrawn = 0;
 var curFPS = 0;
+var jumping = false;
 
 function updateFPS() {
 
@@ -57,6 +58,10 @@ function prepareCanvas(canvasDiv, canvasWidth, canvasHeight)
     // Note: The above code is a workaround for IE 8and lower. Otherwise we could have used:
     //     context = document.getElementById('canvas').getContext("2d");
 
+
+    loadImage("leftArm-jump");
+    loadImage("legs-jump");
+    loadImage("rightArm-jump");
     loadImage("leftArm");
     loadImage("legs");
     loadImage("torso");
@@ -87,14 +92,35 @@ function redraw() {
 
     canvas.width = canvas.width; // clears the canvas
 
-    drawEllipse(x + 40, y + 29, 160 - breathAmt, 6); // Shadow
+    var jumpHeight = 45;
 
-    context.drawImage(images["leftArm"], x + 40, y - 42 - breathAmt);
-    context.drawImage(images["legs"], x, y);
+
+    //draw shadow
+    if (jumping) {
+        drawEllipse(x + 40, y + 29, 100 - breathAmt, 4);
+    } else {
+        drawEllipse(x + 40, y + 29, 160 - breathAmt, 6); // Shadow
+    }
+
+    if (jumping) {
+        y -= jumpHeight;
+    }
+
+    if (jumping) {
+        context.drawImage(images["leftArm-jump"], x + 40, y - 42 - breathAmt);
+        context.drawImage(images["legs-jump"], x - 6, y );
+        context.drawImage(images["rightArm-jump"], x - 35, y - 42 - breathAmt);
+    } else {
+        context.drawImage(images["leftArm"], x + 40, y - 42 - breathAmt);
+        context.drawImage(images["legs"], x, y);
+        context.drawImage(images["rightArm"], x - 15, y - 42 - breathAmt);
+    }
+
+
     context.drawImage(images["torso"], x, y - 50);
     context.drawImage(images["head"], x - 10, y - 125 - breathAmt);
     context.drawImage(images["hair"], x - 37, y - 138 - breathAmt);
-    context.drawImage(images["rightArm"], x - 15, y - 42 - breathAmt);
+
 
     drawEllipse(x + 47, y - 68 - breathAmt, 8, curEyeHeight); // Left Eye
     drawEllipse(x + 58, y - 68 - breathAmt, 8, curEyeHeight); // Right Eye
@@ -159,3 +185,30 @@ function blink() {
         setTimeout(blink, 10);
     }
 }
+
+function jump() {
+
+    if (!jumping) {
+        jumping = true;
+        setTimeout(land, 500);
+    }
+}
+
+
+function land() {
+
+    jumping = false;
+}
+
+
+var el = document.getElementById("canvas");
+
+el.onkeydown = function(evt) {
+    //evt = evt || window.event;
+    alert("keydown: " + evt.keyCode);
+};
+
+el.onkeyup = function(evt) {
+    //evt = evt || window.event;
+    alert("keyup: " + evt.keyCode);
+};
